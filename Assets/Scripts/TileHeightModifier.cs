@@ -54,11 +54,12 @@ public class TileHeightModifier : MonoBehaviour
     
     public static TileType GetTileTypeFromHeight(int height)
     {
-        if (height <= 1) return TileType.Water;
-        if (height == 2) return TileType.Beach;
-        if (height <= 4) return TileType.Grassland;
-        if (height <= 6) return TileType.Forest;
-        if (height <= 8) return TileType.Hills;
+        // Adjusted thresholds for better distribution with higher height values
+        if (height <= 8) return TileType.Water;
+        if (height <= 10) return TileType.Beach;
+        if (height <= 13) return TileType.Grassland;
+        if (height <= 16) return TileType.Forest;
+        if (height <= 19) return TileType.Hills;
         return TileType.Mountain;
     }
 }

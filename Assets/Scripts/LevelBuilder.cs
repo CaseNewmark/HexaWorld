@@ -49,11 +49,9 @@ public class LevelBuilder : MonoBehaviour
                 return;
             }
         }
-        
-        if (hexGrid == null)
-        {
-            hexGrid = new HexGrid(tileSize, gridRadius);
-        }
+
+        // Always update hexGrid with current inspector values
+        hexGrid = new HexGrid(tileSize, gridRadius);
         
         // Clear existing tiles
         tileManager.ClearTiles();
@@ -91,6 +89,7 @@ public class LevelBuilder : MonoBehaviour
 
     private void GenerateMinimap()
     {
+        Debug.Log($"Generating minimap with size: {minimapSize}");
         MinimapGenerator.GenerateMinimapTexture(tileManager.Tiles, minimapSize);
     }
 
@@ -104,6 +103,20 @@ public class LevelBuilder : MonoBehaviour
         else
         {
             Debug.LogWarning("No tiles to generate minimap from. Build level first.");
+        }
+    }
+    
+    [Button]
+    public void ClearLevel()
+    {
+        if (tileManager != null)
+        {
+            tileManager.ClearTiles();
+            Debug.Log("Level cleared successfully.");
+        }
+        else
+        {
+            Debug.LogWarning("TileManager not found. Cannot clear level.");
         }
     }
     

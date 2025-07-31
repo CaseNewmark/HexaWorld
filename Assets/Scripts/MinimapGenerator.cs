@@ -5,15 +5,22 @@ public class MinimapGenerator
 {
     public static void GenerateMinimapTexture(List<HexTile> tiles, int minimapSize = 512, string fileName = "minimap.png")
     {
-        if (tiles.Count == 0) return;
+        if (tiles.Count == 0) 
+        {
+            Debug.LogWarning("No tiles provided for minimap generation!");
+            return;
+        }
+
+        Debug.Log($"Generating minimap with {tiles.Count} tiles, size: {minimapSize}x{minimapSize}");
 
         Texture2D minimap = new Texture2D(minimapSize, minimapSize);
         Color[] pixels = new Color[minimapSize * minimapSize];
         
-        // Initialize with transparent pixels
+        // Initialize with black background
+        Color backgroundColor = Color.black;
         for (int i = 0; i < pixels.Length; i++)
         {
-            pixels[i] = Color.clear;
+            pixels[i] = backgroundColor;
         }
 
         // Find bounds of the tile area
@@ -32,11 +39,17 @@ public class MinimapGenerator
         float height = maxBounds.z - minBounds.z;
         float scale = Mathf.Max(width, height);
         
+        Debug.Log($"Bounds: min({minBounds.x:F2}, {minBounds.z:F2}) max({maxBounds.x:F2}, {maxBounds.z:F2})");
+        Debug.Log($"Scale: {scale:F2}, Width: {width:F2}, Height: {height:F2}");
+        
         // Calculate appropriate hexagon size based on tile density
         float averageSpacing = scale / Mathf.Sqrt(tiles.Count);
-        int hexRadius = Mathf.Max(2, Mathf.FloorToInt((averageSpacing / scale) * minimapSize * 0.4f));
+        int hexRadius = Mathf.Max(3, Mathf.FloorToInt((averageSpacing / scale) * minimapSize * 0.6f));
+        
+        Debug.Log($"Hex radius: {hexRadius}, Average spacing: {averageSpacing:F2}");
 
         // Draw each tile on the minimap
+        int tilesDrawn = 0;
         foreach (var tile in tiles)
         {
             // Convert world position to texture coordinates
@@ -52,8 +65,31 @@ public class MinimapGenerator
             
             Color tileColor = GetTileColor(tile.tileType);
             
+            // Debug first few tiles
+            if (tilesDrawn < 3)
+            {
+                Debug.Log($"Tile {tilesDrawn}: Type={tile.tileType}, Color={tileColor}, Center=({centerX},{centerY}), WorldPos=({tile.position.x:F2},{tile.position.z:F2})");
+            }
+            
             // Draw hexagon
             DrawHexagon(pixels, minimapSize, centerX, centerY, hexRadius, tileColor);
+            tilesDrawn++;
+        }
+        
+        Debug.Log($"Drew {tilesDrawn} tiles on minimap");
+        
+        // Count tile types for debugging
+        var typeCounts = new System.Collections.Generic.Dictionary<TileType, int>();
+        foreach (var tile in tiles)
+        {
+            if (!typeCounts.ContainsKey(tile.tileType))
+                typeCounts[tile.tileType] = 0;
+            typeCounts[tile.tileType]++;
+        }
+        
+        foreach (var kvp in typeCounts)
+        {
+            Debug.Log($"Tile type {kvp.Key}: {kvp.Value} tiles");
         }
 
         minimap.SetPixels(pixels);
@@ -108,6 +144,7 @@ public class MinimapGenerator
         minY = Mathf.Max(0, minY);
         maxY = Mathf.Min(textureSize - 1, maxY);
         
+        int pixelsDrawn = 0;
         // Fill hexagon using point-in-polygon test
         for (int y = minY; y <= maxY; y++)
         {
@@ -119,9 +156,16 @@ public class MinimapGenerator
                     if (index >= 0 && index < pixels.Length)
                     {
                         pixels[index] = color;
+                        pixelsDrawn++;
                     }
                 }
             }
+        }
+        
+        // Debug first few hexagons
+        if (centerX < 50 && centerY < 50)
+        {
+            Debug.Log($"Drew hexagon at ({centerX},{centerY}) with radius {radius}, color {color}, pixels drawn: {pixelsDrawn}");
         }
     }
     
