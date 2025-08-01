@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TileHeightModifier : MonoBehaviour
+public static class TileHeightModifier
 {
     public static void SetHeight(GameObject gameObject, int height)
     {
